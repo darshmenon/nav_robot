@@ -6,9 +6,9 @@ A small differential-drive robot in Gazebo with a full Nav2 stack: obstacle avoi
 
 *A real run: five waypoints, then back to the dock. Blue is the path, green is the lidar, red is the keepout zone, yellow is the slow zone. Source: `scripts/make_demo_gif.py`.*
 
-![The Gazebo view from the overhead camera, sped up 6x](docs/gazebo_view.gif)
+![The robot patrolling in Gazebo](docs/gazebo_view.gif)
 
-*The Gazebo window during a patrol (first part of the run, sped up 6x). Yellow is the slow zone, red is the keepout zone.*
+*The Gazebo window during a patrol. Yellow is the slow zone, red is the keepout zone.*
 
 ## What is in it
 
