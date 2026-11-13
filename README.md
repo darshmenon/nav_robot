@@ -53,13 +53,13 @@ Checked in the sim:
 
 `sim.launch.py` takes `world:=<file.sdf> world_name:=<name> x:= y:= yaw:=` and `nav.launch.py` takes `map:=<map.yaml> x:= y:= yaw:=`, so you can point it at another world and its prebuilt map. The zone filters are dropped automatically when the map is not the office one. The world needs the `gz-sim-*` plugin names (older `ignition-gazebo-*` worlds need a find-and-replace first).
 
-Tried with the hospital world and map from [rosnav](https://github.com/darshmenon/rosnav): Nav2 comes up and the planner returns paths, but the controller aborts every goal ("Resulting plan has 0 poses"). That is not fixed, so only the office world is verified.
+Tried with the hospital world and map from [rosnav](https://github.com/darshmenon/rosnav): goals across the whole hospital succeeded (about 20 m, through corridors and rooms) once Fast DDS was set to UDP only, see below. An earlier attempt failed with "Resulting plan has 0 poses" during the flaky startup; I did not isolate the cause beyond that, so treat it as working but lightly tested.
 
 ## Known limits
 
 - SLAM: driving a 16-waypoint route through every room with `slam:=true`, then saving the map, covered 72% of the free space with 91% of the true wall pixels recovered and no false walls (15 cm tolerance). Corners and the inside of the pillars were never seen. There is no automatic exploration yet: you drive it with waypoints or the dashboard.
 - In SLAM mode the costmaps warn "Filter mask was not received" because the zone filters need a static map. It is harmless.
-- DDS discovery is flaky on a heavily loaded machine. If Nav2 does not reach "Managed nodes are active", restart `nav.launch.py`.
+- On this machine Nav2 sometimes stalled at startup, or lost goal responses ("Failed to send goal response (timeout)"). Switching Fast DDS to UDP only removed it in testing: `export FASTRTPS_DEFAULT_PROFILES_FILE=$(ros2 pkg prefix nav_robot)/share/nav_robot/config/fastdds_udp.xml` before launching everything. After that, Nav2 came up first time and one hospital run had no lost responses; that is one run, not proof. If you still see timeouts, restart `nav.launch.py`.
 
 ## Layout
 

@@ -5,6 +5,7 @@ import math
 import rclpy
 from geometry_msgs.msg import PoseStamped
 from nav2_simple_commander.robot_navigator import BasicNavigator, TaskResult
+from nav_msgs.msg import Odometry
 
 DOCK = (-4.0, -4.0, 0.0)
 WAYPOINTS = [(-4.0, 0.5, 1.57), (-3.0, 4.0, 0.0), (0.5, 0.2, -1.57), (2.0, 3.8, 0.0), (4.0, 4.0, -1.57)]
@@ -25,6 +26,15 @@ def main():
     args = ap.parse_args()
     rclpy.init()
     nav = BasicNavigator()
+    dist = {'d': 0.0, 'last': None}
+
+    def on_odom(m):
+        p = (m.pose.pose.position.x, m.pose.pose.position.y)
+        if dist['last'] is not None:
+            dist['d'] += math.dist(p, dist['last'])
+        dist['last'] = p
+
+    nav.create_subscription(Odometry, '/odom', on_odom, 10)
     nav.setInitialPose(pose(nav, *DOCK))
     nav.waitUntilNav2Active()
     for i in range(args.loops):
@@ -32,6 +42,7 @@ def main():
         nav.followWaypoints([pose(nav, *w) for w in WAYPOINTS])
         last = -1
         while not nav.isTaskComplete():
+            rclpy.spin_once(nav, timeout_sec=0.05)
             fb = nav.getFeedback()
             if fb and fb.current_waypoint != last:
                 last = fb.current_waypoint
@@ -40,8 +51,11 @@ def main():
     print('returning to dock')
     nav.goToPose(pose(nav, *DOCK))
     while not nav.isTaskComplete():
-        pass
+        rclpy.spin_once(nav, timeout_sec=0.05)
     print('docked' if nav.getResult() == TaskResult.SUCCEEDED else f'dock failed: {nav.getResult()}')
+    print(f'driven {dist["d"]:.1f} m')
+    if dist['d'] < 1.0:
+        print('WARNING: the robot barely moved, so the "success" above is not trustworthy (blind lidar or stalled sim?)')
     rclpy.shutdown()
 
 
