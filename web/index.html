@@ -1,0 +1,26 @@
+<!doctype html><meta charset="utf-8"><title>Nav Dashboard</title>
+<style>body{font:14px sans-serif;margin:16px;background:#111;color:#eee}canvas{background:#222;cursor:crosshair;border:1px solid #444}
+button{padding:6px 14px;margin-left:8px}#s{font-weight:bold}</style>
+<h3>nav_robot <span id="s">…</span> <button onclick="fetch('/api/cancel',{method:'POST'})">Cancel</button></h3>
+<p>Click the map to send a goal (drag to set heading).</p>
+<canvas id="c" width="600" height="600"></canvas>
+<script>
+const RES=0.05,HALF=6,PX=600/(2*HALF),c=document.getElementById('c'),g=c.getContext('2d');
+const img=new Image();img.src='/map.png';let st={};
+const w2c=(x,y)=>[(x+HALF)*PX,(HALF-y)*PX], c2w=(px,py)=>[px/PX-HALF,HALF-py/PX];
+let down=null;
+c.onmousedown=e=>{down=c2w(e.offsetX,e.offsetY)};
+c.onmouseup=e=>{if(!down)return;const u=c2w(e.offsetX,e.offsetY);
+ const yaw=Math.hypot(u[0]-down[0],u[1]-down[1])>0.2?Math.atan2(u[1]-down[1],u[0]-down[0]):0;
+ fetch('/api/goal',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({x:down[0],y:down[1],yaw})});down=null};
+function draw(){g.clearRect(0,0,600,600);
+ if(img.complete&&img.naturalWidth){const t=document.createElement('canvas');t.width=img.width;t.height=img.height;
+  g.imageSmoothingEnabled=false;g.drawImage(img,0,0,600,600);}
+ const p=st.pose;if(p){const [cx,cy]=w2c(p.x,p.y);
+  g.fillStyle='#0f0';for(const [sx,sy] of st.scan||[]){const wx=p.x+sx*Math.cos(p.yaw)-sy*Math.sin(p.yaw),wy=p.y+sx*Math.sin(p.yaw)+sy*Math.cos(p.yaw);
+   const [a,b]=w2c(wx,wy);g.fillRect(a-1,b-1,3,3);}
+  g.fillStyle='#4af';g.beginPath();g.arc(cx,cy,9,0,7);g.fill();
+  g.strokeStyle='#fff';g.beginPath();g.moveTo(cx,cy);g.lineTo(cx+14*Math.cos(p.yaw),cy-14*Math.sin(p.yaw));g.stroke();}
+ document.getElementById('s').textContent=st.status||'…';}
+async function poll(){try{st=await (await fetch('/api/state')).json()}catch(e){}draw();setTimeout(poll,200)}poll();
+</script>
