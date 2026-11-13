@@ -59,7 +59,7 @@ Tried with the hospital world and map from [rosnav](https://github.com/darshmeno
 
 - SLAM: driving a 16-waypoint route through every room with `slam:=true`, then saving the map, covered 72% of the free space with 91% of the true wall pixels recovered and no false walls (15 cm tolerance). Corners and the inside of the pillars were never seen. There is no automatic exploration yet: you drive it with waypoints or the dashboard.
 - In SLAM mode the costmaps warn "Filter mask was not received" because the zone filters need a static map. It is harmless.
-- On this machine Nav2 sometimes stalled at startup, or lost goal responses ("Failed to send goal response (timeout)"). Switching Fast DDS to UDP only removed it in testing: `export FASTRTPS_DEFAULT_PROFILES_FILE=$(ros2 pkg prefix nav_robot)/share/nav_robot/config/fastdds_udp.xml` before launching everything. After that, Nav2 came up first time and one hospital run had no lost responses; that is one run, not proof. If you still see timeouts, restart `nav.launch.py`.
+- On this machine Nav2 sometimes stalled at startup, or lost goal responses ("Failed to send goal response (timeout)"). The launch files now set Fast DDS to UDP only (`config/fastdds_udp.xml`) unless `FASTRTPS_DEFAULT_PROFILES_FILE` is already set. With that, 3 clean restarts in a row came up first time and a goal succeeded each time with no lost replies. Other DDS setups are untested.
 
 ## Layout
 

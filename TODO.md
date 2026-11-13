@@ -6,7 +6,7 @@ Open items for nav_robot, from what was tried and not finished (2026-11-13). Tic
 - [ ] Frontier explorer (`scripts/explore.py`, not in the repo) is partly fixed (2026-11-13): it now picks goals and reaches the doorway, but stops with "no frontiers left" after about 5 goals at 17% of the free space explored (SLAM wall precision 100%). Cause so far: right after start slam_toolbox's map is thin rays, so frontier detection is noisy; goal results come back `UNKNOWN`. Try: wait for the map to fill between goals, or score frontiers by unknown area behind them.
 - [x] DONE 2026-11-14 (lightly tested): hospital world from rosnav now navigates, goals up to about 20 m succeeded. The earlier "plan has 0 poses" failure went away with UDP-only Fast DDS and was never isolated further.
 - [x] DONE 2026-11-13: lidar blindness watchdog (`scripts/scan_watchdog.py`, started by `nav.launch.py`; quiet on a healthy sim, fires on an all-inf scan) and the patrol now prints the distance driven and warns under 1 m (a real patrol drove 33.2 m). The cause of the sim going blind is still unknown.
-- [x] DONE 2026-11-14 (one clean run): lifecycle stalls and lost goal responses stopped after forcing UDP-only Fast DDS (`config/fastdds_udp.xml`). Confirm over several more runs; if it holds, set the profile automatically in the launch files.
+- [x] DONE 2026-11-14 (one clean run): lifecycle stalls and lost goal responses stopped after forcing UDP-only Fast DDS (`config/fastdds_udp.xml`). Confirmed over 3 more clean restarts, and the launch files now set the profile automatically.
 - [x] DONE 2026-11-13: SLAM mode no longer logs "Filter mask was not received" (the generated params drop the zone filters when mapping; 0 warnings in a fresh run).
 
 ## Verify
@@ -18,7 +18,7 @@ Open items for nav_robot, from what was tried and not finished (2026-11-13). Tic
 - [ ] Re-record a full patrol GIF including the dock return (the Gazebo GIF is partial).
 - [ ] Add RViz screenshots to the README.
 - [ ] Cut v0.2.0 once the explorer and the zone checks are done.
-- [ ] CI: build the package and run `gen_world.py` plus the launch file syntax check on every push.
+- [x] DONE 2026-11-14: CI builds the package, checks `gen_world.py` output and the URDF on every push (first run to be checked on GitHub).
 
 ## Features
 - [ ] Automatic exploration that saves a map (needs the explorer fixed).

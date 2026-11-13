@@ -1,6 +1,7 @@
 import os
 from ament_index_python.packages import get_package_share_directory as share
 from launch import LaunchDescription
+from launch.actions import SetEnvironmentVariable
 from launch.actions import DeclareLaunchArgument, ExecuteProcess, TimerAction
 from launch.conditions import IfCondition, UnlessCondition
 from launch.substitutions import Command, LaunchConfiguration
@@ -21,7 +22,11 @@ def generate_launch_description():
         cmd=['gz', 'sim', '-r', world],
         output='screen', condition=UnlessCondition(headless))
 
-    return LaunchDescription([
+    # Fast DDS over UDP only: the shared-memory transport lost service/action replies on this setup.
+    # Skipped when the user already chose a profile.
+    dds = [] if 'FASTRTPS_DEFAULT_PROFILES_FILE' in os.environ else [SetEnvironmentVariable(
+        'FASTRTPS_DEFAULT_PROFILES_FILE', os.path.join(share('nav_robot'), 'config', 'fastdds_udp.xml'))]
+    return LaunchDescription(dds + [
         DeclareLaunchArgument('headless', default_value='false'),
         DeclareLaunchArgument('world', default_value=os.path.join(pkg, 'worlds', 'office.sdf')),
         DeclareLaunchArgument('world_name', default_value='office'),

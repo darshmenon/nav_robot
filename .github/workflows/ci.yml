@@ -1,0 +1,31 @@
+name: CI
+on: [push, pull_request]
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    container: ros:humble
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends python3-pip python3-flask python3-pil python3-numpy python3-scipy \
+            ros-humble-nav2-bringup ros-humble-nav2-simple-commander ros-humble-slam-toolbox \
+            ros-humble-robot-localization ros-humble-ros-gz-sim ros-humble-ros-gz-bridge ros-humble-xacro
+      - name: Python syntax
+        run: python3 -m py_compile scripts/*.py launch/*.py
+      - name: World and maps are generated from one source and match the committed files
+        run: |
+          cp -r worlds maps /tmp/
+          python3 scripts/gen_world.py
+          diff -r worlds /tmp/worlds && diff -r maps /tmp/maps
+      - name: Robot description parses
+        run: |
+          . /opt/ros/humble/setup.sh
+          xacro urdf/robot.urdf.xacro > /tmp/r.urdf
+          check_urdf /tmp/r.urdf
+      - name: Build
+        run: |
+          . /opt/ros/humble/setup.sh
+          mkdir -p /ws/src && cp -r . /ws/src/nav_robot
+          cd /ws && colcon build --symlink-install
