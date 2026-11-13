@@ -45,6 +45,12 @@ Checked in the sim:
 - A goal inside the keepout zone is refused, and a route to a goal beyond it has no poses in the zone.
 - In the slow zone the robot's 95th percentile speed was 0.19 m/s, against 0.50 m/s elsewhere.
 
+## Other worlds and maps
+
+`sim.launch.py` takes `world:=<file.sdf> world_name:=<name> x:= y:= yaw:=` and `nav.launch.py` takes `map:=<map.yaml> x:= y:= yaw:=`, so you can point it at another world and its prebuilt map. The zone filters are dropped automatically when the map is not the office one. The world needs the `gz-sim-*` plugin names (older `ignition-gazebo-*` worlds need a find-and-replace first).
+
+Tried with the hospital world and map from [rosnav](https://github.com/darshmenon/rosnav): Nav2 comes up and the planner returns paths, but the controller aborts every goal ("Resulting plan has 0 poses"). That is not fixed, so only the office world is verified.
+
 ## Known limits
 
 - SLAM mode is untested end to end: it comes up and publishes `/map`, but a full mapping run was not scored against the world.
